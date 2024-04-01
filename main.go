@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"log"
 	"math"
 	"os"
@@ -58,6 +59,60 @@ func imageToGrayscaleMatrix(img *image.Gray) *mat64.Dense {
 	return mat64.NewDense(rows, cols, data)
 }
 
+func compareResize(image1, image2 *mat64.Dense, threshold float64) bool {
+	fmt.Println("Comparing images...")
+	rows1, cols1 := image1.Dims()
+	rows2, cols2 := image2.Dims()
+
+	// Resize images to the same dimensions if they are different
+	if rows1 != rows2 || cols1 != cols2 {
+		// Resize image2 to match dimensions of image1
+		resizedImage2 := imaging.Resize(image2, cols1, rows1, imaging.Linear)
+
+		// Convert resized image2 to *mat64.Dense
+		rows2, cols2 := resizedImage2.Bounds().Dy(), resizedImage2.Bounds().Dx()
+		data2 := make([]float64, rows2*cols2)
+		for y := 0; y < rows2; y++ {
+			for x := 0; x < cols2; x++ {
+				r, _, _, _ := resizedImage2.At(x, y).RGBA()
+				data2[y*cols2+x] = float64(r)
+			}
+		}
+		image2 = mat64.NewDense(rows2, cols2, data2)
+	}
+
+	// Perform comparison
+	diff := mat64.NewDense(rows1, cols1, nil)
+	diff.Sub(image1, image2)
+
+	var sumSquared float64
+	diff.Apply(func(i, j int, v float64) float64 {
+		sumSquared += v * v
+		return v
+	}, diff)
+
+	rmsDiff := sumSquared / float64(rows1*cols1)
+	rmsDiff = math.Sqrt(rmsDiff)
+
+	return rmsDiff <= threshold
+}
+
+func matToImage(mat *mat64.Dense, width, height int) image.Image {
+	rows, cols := mat.Dims()
+
+	img := image.NewGray(image.Rect(0, 0, width, height))
+
+	data := mat.RawMatrix().Data
+	for y := 0; y < rows; y++ {
+		for x := 0; x < cols; x++ {
+			val := uint8(data[y*cols+x])
+			img.SetGray(x, y, color.Gray{val})
+		}
+	}
+
+	return img
+}
+
 func main() {
 
 	dir, err := os.Getwd()
@@ -68,7 +123,7 @@ func main() {
 
 	imagesDir := filepath.Join(dir, "images")
 	image1 := "image1.jpg"
-	image2 := "image2.jpg"
+	image2 := "image6.jpg"
 
 	image1Path := filepath.Join(imagesDir, image1)
 	image2Path := filepath.Join(imagesDir, image2)
