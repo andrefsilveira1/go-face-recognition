@@ -1,7 +1,18 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"image"
 
-func main() {
-	fmt.Println("Hello, World!")
+	"github.com/gonum/matrix/mat64"
+)
+
+func compare(image1, image2 *mat64.Dense, threshold float64) bool {
+	fmt.Println("Comparing images")
+
+	return false
+}
+
+func Identify(images []image.Image) {
+	fmt.Println("Images received!")
 }
