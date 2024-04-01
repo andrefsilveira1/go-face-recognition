@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/disintegration/imaging"
 	"github.com/gonum/matrix/mat64"
 )
 
@@ -37,17 +38,10 @@ func compare(image1, image2 *mat64.Dense, threshold float64) bool {
 }
 
 func loadImage(path string) (image.Image, error) {
-	file, err := os.Open(path)
+	img, err := imaging.Open(path)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-
-	img, _, err := image.Decode(file)
-	if err != nil {
-		return nil, err
-	}
-
 	return img, nil
 }
 
@@ -66,7 +60,13 @@ func imageToGrayscaleMatrix(img *image.Gray) *mat64.Dense {
 
 func main() {
 
-	imagesDir := "go-opencv/images"
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current directory:", err)
+		return
+	}
+
+	imagesDir := filepath.Join(dir, "images")
 	image1 := "image1.jpg"
 	image2 := "image2.jpg"
 
