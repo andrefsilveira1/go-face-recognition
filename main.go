@@ -51,6 +51,19 @@ func loadImage(path string) (image.Image, error) {
 	return img, nil
 }
 
+func imageToGrayscaleMatrix(img *image.Gray) *mat64.Dense {
+	bounds := img.Bounds()
+	rows, cols := bounds.Dy(), bounds.Dx()
+	data := make([]float64, rows*cols)
+	for y := 0; y < rows; y++ {
+		for x := 0; x < cols; x++ {
+			grayValue := img.GrayAt(x, y).Y
+			data[y*cols+x] = float64(grayValue)
+		}
+	}
+	return mat64.NewDense(rows, cols, data)
+}
+
 func main() {
 
 	imagesDir := "go-opencv/images"
@@ -60,7 +73,20 @@ func main() {
 	image1Path := filepath.Join(imagesDir, image1)
 	image2Path := filepath.Join(imagesDir, image2)
 
-	if compare(image1Path, image2Path, 0.1) {
+	img1, err := loadImage(image1Path)
+
+	if err != nil {
+		fmt.Println("Error loading image 1:", err)
+		return
+	}
+	img2, err := loadImage(image2Path)
+
+	if err != nil {
+		fmt.Println("Error loading image 2:", err)
+		return
+	}
+
+	if compare(img1, img2, 0.1) {
 		fmt.Println("EQUAL!")
 	} else {
 		fmt.Println("FALSE")
