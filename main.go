@@ -67,7 +67,8 @@ func compareResize(image1, image2 *mat64.Dense, threshold float64) bool {
 	// Resize images to the same dimensions if they are different
 	if rows1 != rows2 || cols1 != cols2 {
 		// Resize image2 to match dimensions of image1
-		resizedImage2 := imaging.Resize(image2, cols1, rows1, imaging.Linear)
+		resizedImage2 := matToImage(image2, cols1, rows1)
+		resizedImage2 = imaging.Resize(resizedImage2, cols1, rows1, imaging.Linear)
 
 		// Convert resized image2 to *mat64.Dense
 		rows2, cols2 := resizedImage2.Bounds().Dy(), resizedImage2.Bounds().Dx()
@@ -123,7 +124,7 @@ func main() {
 
 	imagesDir := filepath.Join(dir, "images")
 	image1 := "image1.jpg"
-	image2 := "image6.jpg"
+	image2 := "image8.png"
 
 	image1Path := filepath.Join(imagesDir, image1)
 	image2Path := filepath.Join(imagesDir, image2)
@@ -147,11 +148,14 @@ func main() {
 	newImage1 := imageToGrayscaleMatrix(gray1)
 	newImage2 := imageToGrayscaleMatrix(gray2)
 
-	if compare(newImage1, newImage2, 0.1) {
-		fmt.Println("EQUAL!")
+	fmt.Println("Compare without resizing:")
+
+	fmt.Println("Compare with resizing:")
+
+	if compareResize(newImage1, newImage2, 0.1) {
+		fmt.Println(" EQUAL!")
 	} else {
 		fmt.Println("FALSE")
 	}
 
-	fmt.Println("Images received!")
 }
