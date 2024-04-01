@@ -86,10 +86,17 @@ func main() {
 		return
 	}
 
-	if compare(img1, img2, 0.1) {
+	gray1 := image.NewGray(img1.Bounds())
+	gray2 := image.NewGray(img2.Bounds())
+
+	newImage1 := imageToGrayscaleMatrix(gray1)
+	newImage2 := imageToGrayscaleMatrix(gray2)
+
+	if compare(newImage1, newImage2, 0.1) {
 		fmt.Println("EQUAL!")
 	} else {
 		fmt.Println("FALSE")
 	}
+
 	fmt.Println("Images received!")
 }
