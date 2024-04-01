@@ -5,6 +5,8 @@ import (
 	"image"
 	"log"
 	"math"
+	"os"
+	"path/filepath"
 
 	"github.com/gonum/matrix/mat64"
 )
@@ -34,6 +36,34 @@ func compare(image1, image2 *mat64.Dense, threshold float64) bool {
 
 }
 
-func Identify(images []image.Image) {
+func loadImage(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return img, nil
+}
+
+func main() {
+
+	imagesDir := "go-opencv/images"
+	image1 := "image1.jpg"
+	image2 := "image2.jpg"
+
+	image1Path := filepath.Join(imagesDir, image1)
+	image2Path := filepath.Join(imagesDir, image2)
+
+	if compare(image1Path, image2Path, 0.1) {
+		fmt.Println("EQUAL!")
+	} else {
+		fmt.Println("FALSE")
+	}
 	fmt.Println("Images received!")
 }
